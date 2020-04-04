@@ -1,12 +1,12 @@
 
 (ns app.comp.container
-  (:require [hsl.core :refer [hsl]]
-            [respo-ui.core :as ui]
+  (:require [respo-ui.core :as ui]
             [phlox.core :refer [defcomp container >> hslx text rect circle]]
             [app.config :refer [dev?]]
             [app.schema :as schema]
             [app.config :as config]
-            [app.comp.workspace :refer [comp-workspace]]))
+            [app.comp.workspace :refer [comp-workspace]]
+            [app.comp.reel :refer [comp-reel comp-status]]))
 
 (defcomp
  comp-container
@@ -17,18 +17,9 @@
        router-data (:data router)]
    (container
     {}
-    (circle
-     {:position [40 (- js/window.innerHeight 52)],
-      :radius 8,
-      :fill (or (:color store) (hslx 0 0 32)),
-      :on {:click (fn [e d!] (js/console.log (clj->js store)))}})
-    (text
-     {:position [60 (- js/window.innerHeight 60)],
-      :text (str (:count store) " users online."),
-      :style {:font-family ui/font-fancy,
-              :fill (hslx 0 0 80),
-              :font-size 16,
-              :font-weight 500}})
+    (comp-status store [40 (- js/window.innerHeight 52)])
+    (when dev?
+      (comp-reel {:position [200 (- js/window.innerHeight 60)], :size (:reel-length store)}))
     (if (nil? store)
       (text
        {:text "Client is offline...",

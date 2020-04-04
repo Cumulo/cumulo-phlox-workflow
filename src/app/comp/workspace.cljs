@@ -18,7 +18,9 @@
     (comp-button
      {:text "Add", :position [320 20], :on-click (fn [e d!] (d! :workspace/add-point nil))})
     (rect
-     {:position [0 0], :size [120 40], :fill (hslx 0 80 60)}
+     {:position [0 0],
+      :size [120 40],
+      :line-style {:color (hslx 0 80 60), :alpha 1, :width 2}}
      (text
       {:text "drag here to remove..",
        :position [4 10],
