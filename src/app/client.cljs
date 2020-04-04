@@ -1,7 +1,9 @@
 
 (ns app.client
-  (:require [respo.core :refer [render! clear-cache! realize-ssr!]]
-            [respo.cursor :refer [update-states]]
+  (:require ["pixi.js" :as PIXI]
+            [phlox.core :refer [render!]]
+            ["fontfaceobserver" :as FontFaceObserver]
+            [phlox.cursor :refer [update-states]]
             [app.comp.container :refer [comp-container]]
             [cljs.reader :refer [read-string]]
             [app.schema :as schema]
@@ -30,7 +32,7 @@
       (do (println "Found no storage.")))))
 
 (defn dispatch! [op op-data]
-  (when (and config/dev? (not= op :states)) (println "Dispatch" op op-data))
+  (when (and config/dev? (not= op :states)) (comment println "Dispatch" op op-data))
   (case op
     :states (reset! *states (update-states @*states op-data))
     :effect/connect (connect!)
@@ -48,25 +50,25 @@
         (case (:kind data)
           :patch
             (let [changes (:data data)]
-              (when config/dev? (js/console.log "Changes" (clj->js changes)))
+              (when config/dev? (comment js/console.log "Changes" (clj->js changes)))
               (reset! *store (patch-twig @*store changes)))
           (println "unknown kind:" data)))})))
 
-(def mount-target (.querySelector js/document ".app"))
+(def global-fonts
+  (js/Promise.all
+   (array (.load (FontFaceObserver. "Josefin Sans")) (.load (FontFaceObserver. "Hind")))))
 
-(defn render-app! [renderer]
-  (renderer mount-target (comp-container (:states @*states) @*store) dispatch!))
-
-(def ssr? (some? (.querySelector js/document "meta.respo-ssr")))
+(defn render-app! [] (render! (comp-container (:states @*states) @*store) dispatch! {}))
 
 (defn main! []
   (println "Running mode:" (if config/dev? "dev" "release"))
-  (if ssr? (render-app! realize-ssr!))
-  (render-app! render!)
+  (-> global-fonts (.then (fn [] (render-app!))))
+  (add-watch *store :change render-app!)
+  (add-watch *states :change render-app!)
   (connect!)
-  (add-watch *store :changes #(render-app! render!))
-  (add-watch *states :changes #(render-app! render!))
   (on-page-touch #(if (nil? @*store) (connect!)))
   (println "App started!"))
 
-(defn reload! [] (clear-cache!) (render-app! render!) (println "Code updated."))
+(def mount-target (.querySelector js/document ".app"))
+
+(defn reload! [] (render-app!) (println "Code updated."))

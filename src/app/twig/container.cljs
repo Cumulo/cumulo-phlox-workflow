@@ -19,6 +19,7 @@
        base-data {:logged-in? logged-in?, :session session, :reel-length (count records)}]
    (merge
     base-data
+    {:points (:points db)}
     (if logged-in?
       {:user (twig-user (get-in db [:users (:user-id session)])),
        :router (assoc
