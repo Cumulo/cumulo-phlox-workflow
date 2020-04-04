@@ -58,17 +58,18 @@
   (js/Promise.all
    (array (.load (FontFaceObserver. "Josefin Sans")) (.load (FontFaceObserver. "Hind")))))
 
-(defn render-app! [] (render! (comp-container (:states @*states) @*store) dispatch! {}))
+(defn render-app! [swap?]
+  (render! (comp-container (:states @*states) @*store) dispatch! {:swap? swap?}))
 
 (defn main! []
   (println "Running mode:" (if config/dev? "dev" "release"))
-  (-> global-fonts (.then (fn [] (render-app!))))
-  (add-watch *store :change render-app!)
-  (add-watch *states :change render-app!)
+  (-> global-fonts (.then (fn [] (render-app! false))))
+  (add-watch *store :change (fn [] (render-app! false)))
+  (add-watch *states :change (fn [] (render-app! false)))
   (connect!)
   (on-page-touch #(if (nil? @*store) (connect!)))
   (println "App started!"))
 
 (def mount-target (.querySelector js/document ".app"))
 
-(defn reload! [] (render-app!) (println "Code updated."))
+(defn reload! [] (render-app! true) (println "Code updated."))

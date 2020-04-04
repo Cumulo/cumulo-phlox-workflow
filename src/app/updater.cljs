@@ -17,7 +17,6 @@
             :user/log-out user/log-out
             :router/change router/change
             :workspace/add-point workspace/add-point
-            :workspace/remove-point workspace/remove-point
             :workspace/update-point workspace/update-point
             (do (println "Unknown op:" op) identity))]
     (f db op-data sid op-id op-time)))

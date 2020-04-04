@@ -16,7 +16,13 @@
    (container
     {}
     (comp-button
-     {:text "Add", :position [200 40], :on-click (fn [e d!] (d! :workspace/add-point nil))})
+     {:text "Add", :position [320 20], :on-click (fn [e d!] (d! :workspace/add-point nil))})
+    (rect
+     {:position [0 0], :size [120 40], :fill (hslx 0 80 60)}
+     (text
+      {:text "drag here to remove..",
+       :position [4 10],
+       :style {:fill (hslx 0 80 100), :font-size 12}}))
     (create-list
      :container
      {}
@@ -29,4 +35,6 @@
                (comp-drag-point
                 (>> states k)
                 {:position point,
+                 :radius 4,
+                 :hide-text? true,
                  :on-change (fn [position d!] (d! :workspace/update-point [k position]))}))])))))))
