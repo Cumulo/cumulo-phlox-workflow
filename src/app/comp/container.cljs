@@ -18,10 +18,17 @@
    (container
     {}
     (circle
-     {:position [40 (- js/window.innerHeight 80)],
+     {:position [40 (- js/window.innerHeight 52)],
       :radius 8,
       :fill (or (:color store) (hslx 0 0 32)),
       :on {:click (fn [e d!] (js/console.log (clj->js store)))}})
+    (text
+     {:position [60 (- js/window.innerHeight 60)],
+      :text (str (:count store) " users online."),
+      :style {:font-family ui/font-fancy,
+              :fill (hslx 0 0 80),
+              :font-size 16,
+              :font-weight 500}})
     (if (nil? store)
       (text
        {:text "Client is offline...",
