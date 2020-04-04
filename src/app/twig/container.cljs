@@ -19,7 +19,7 @@
        base-data {:logged-in? logged-in?, :session session, :reel-length (count records)}]
    (merge
     base-data
-    {:points (:points db)}
+    {:points (:points db), :color (rand-int 0xffffff)}
     (if logged-in?
       {:user (twig-user (get-in db [:users (:user-id session)])),
        :router (assoc
@@ -29,6 +29,5 @@
                   :home (:pages db)
                   :profile (twig-members (:sessions db) (:users db))
                   {})),
-       :count (count (:sessions db)),
-       :color (color/randomColor)}
+       :count (count (:sessions db))}
       nil))))

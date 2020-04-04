@@ -19,8 +19,8 @@
     {}
     (circle
      {:position [40 (- js/window.innerHeight 80)],
-      :radius 20,
-      :fill (or (:color store) (hslx 0 0 90)),
+      :radius 8,
+      :fill (or (:color store) (hslx 0 0 32)),
       :on {:click (fn [e d!] (js/console.log (clj->js store)))}})
     (if (nil? store)
       (text
