@@ -1,16 +1,17 @@
 
-Cumulo Workflow
+Cumulo Phlox Workflow
 ------
 
-> Personal project template for creating realtime apps. Accomplished with [recollect](https://github.com/Cumulo/recollect) and [calcit-workrlow](https://github.com/mvc-works/calcit-workflow).
+> Personal template for creating realtime apps in [Phlox](https://github.com/Quamolit/phlox/).
+
+Demo http://repo.cumulo.org/cumulo-phlox-workflow/index.html
 
 Features:
 
 * hot swapping client & server
 * developing realtime app like building an SPA
 * all in ClojureScript
-
-View showcases on http://topix.im/ .
+* Pixi.js rendering with Phlox
 
 ### Usages
 
@@ -37,7 +38,7 @@ Code is editing with [calcit-editor](https://github.com/Cirru/calcit-editor).
 
 ### Workflow
 
-https://github.com/Cumulo/cumulo-workflow
+https://github.com/Cumulo/cumulo-phlox-workflow
 
 ### License
 
