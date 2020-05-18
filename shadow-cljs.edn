@@ -10,14 +10,14 @@
     [cumulo/util "0.1.10"]
     [respo "0.12.1"]
     [respo/ui "0.3.14"]
-    [respo/alerts "0.5.0"]
+    [respo/alerts "0.5.1"]
     [respo/message "0.3.6"]
     [respo/feather "0.1.1"]
-    [quamolit/phlox "0.2.0-a5"]
+    [quamolit/phlox "0.3.0"]
     [cirru/bisection-key "0.1.5"]
     [cirru/favored-edn "0.1.3"]
     [medley "1.3.0"]
-    [appliedscience/js-interop "0.2.5"]
+    [applied-science/js-interop "0.2.7"]
     [org.clojure/core.incubator "0.1.4"]
   ]
   :open-file-command [
@@ -37,7 +37,7 @@
     }
     :server {
       :target :node-script, :output-to "target/server.js", :main app.server/main!
-      :devtools {:after-load app.server/reload!}
+      :devtools {:after-load app.server/reload!, :build-notify app.build-info/on-build!}
       :release {:output-to "dist/server.js"}
     }
     :page {

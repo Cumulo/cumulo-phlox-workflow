@@ -16,7 +16,9 @@
    (container
     {}
     (comp-button
-     {:text "Add", :position [320 20], :on-click (fn [e d!] (d! :workspace/add-point nil))})
+     {:text "Add",
+      :position [320 20],
+      :on-pointertap (fn [e d!] (d! :workspace/add-point nil))})
     (rect
      {:position [0 0],
       :size [120 40],
