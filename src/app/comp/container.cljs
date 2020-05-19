@@ -6,7 +6,10 @@
             [app.schema :as schema]
             [app.config :as config]
             [app.comp.workspace :refer [comp-workspace]]
-            [app.comp.reel :refer [comp-reel comp-status]]))
+            [app.comp.reel :refer [comp-reel comp-status]]
+            [app.comp.signin :refer [comp-signin]]
+            [phlox.comp.messages :refer [comp-messages]]
+            [app.comp.profile :refer [comp-profile]]))
 
 (defcomp
  comp-container
@@ -28,4 +31,10 @@
                 :fill (hslx 0 0 50),
                 :font-size 40,
                 :font-weight 300}})
-      (container {} (comp-workspace (>> states :workspace) (:points store)))))))
+      (if (:logged-in? store)
+        (container {} (comp-workspace (>> states :workspace) (:points store)))
+        (comp-signin (>> states :signin))))
+    (if (some? (:user store)) (comp-profile (:user store)))
+    (comp-messages
+     {:messages (or (vals (:messages session)) []),
+      :on-pointertap (fn [message d!] (d! :session/remove-message message))}))))
