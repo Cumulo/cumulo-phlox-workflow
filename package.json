@@ -4,13 +4,14 @@
   "description": "Cumulo Workflow",
   "main": "index.js",
   "scripts": {
-    "watch": "shadow-cljs watch client server",
-    "build-cdn": "shadow-cljs clj-run build.main/build-cdn",
-    "build": "shadow-cljs clj-run build.main/build",
-    "page": "shadow-cljs clj-run build.main/page",
-    "up": "yarn build-cdn && tiye-up",
-    "ln": "cd target && rm -f entry && ln -s ../entry",
-    "prod": "yarn install --production"
+    "watch-server": "cr --emit-js",
+    "build-server": "yarn webpack && node js-out/bundle.js",
+    "dev-server": "hot=true webpack --watch",
+    "compile-server": "cr --emit-js --once",
+    "compile-page": "cr --emit-js --once --init-fn app.client/main! --reload-fn app.client/reload! --emit-path out-page",
+    "release-page": "vite build --base=./",
+    "release-server": "webpack",
+    "watch-page": "cr --emit-js --emit-path out-page/ --init-fn app.client/main! --reload-fn app.client/reload!"
   },
   "repository": {
     "type": "git",
@@ -19,18 +20,20 @@
   "author": "jiyinyiyong",
   "license": "MIT",
   "dependencies": {
-    "md5": "^2.2.1",
-    "randomcolor": "^0.5.4",
-    "shortid": "^2.2.15",
-    "ws": "^7.4.6"
+    "@calcit/procs": "^0.4.20",
+    "md5": "^2.3.0",
+    "randomcolor": "^0.6.2",
+    "shortid": "^2.2.16",
+    "ws": "^8.2.0"
   },
   "devDependencies": {
-    "feather-icons": "^4.28.0",
-    "fontfaceobserver": "^2.1.0",
-    "node-notifier": "^8.0.1",
-    "pixi.js": "^5.2.4",
-    "shadow-cljs": "^2.9.7",
-    "source-map-support": "^0.5.19",
-    "url-parse": "^1.5.2"
+    "@quamolit/phlox-utils": "^0.0.1",
+    "bottom-tip": "^0.1.2",
+    "fontfaceobserver-es": "^3.3.3",
+    "pixi.js": "^6.1.2",
+    "url-parse": "^1.5.3",
+    "vite": "^2.5.0",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
   }
 }
