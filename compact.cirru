@@ -212,7 +212,7 @@
             repeat! 600 $ fn () (persist-db!)
         |*loop-trigger $ quote (defatom *loop-trigger 0)
         |on-exit! $ quote
-          defn on-exit! (? code) (persist-db!)
+          defn on-exit! (? opts code) (persist-db!)
             ; println "\"exit code is:" $ pr-str code
             js/process.exit
         |dispatch! $ quote
