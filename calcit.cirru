@@ -1571,6 +1571,20 @@
                                 :at 1589820694889
                                 :by |B1y7Rc-Zz
                                 :id |BY8l9nAru_
+                              |n $ {}
+                                :data $ {}
+                                  |T $ {} (:text |:position) (:type :leaf) (:at 1632898041370) (:by |B1y7Rc-Zz)
+                                  |j $ {}
+                                    :data $ {}
+                                      |T $ {} (:text |[]) (:type :leaf) (:at 1632898042125) (:by |B1y7Rc-Zz)
+                                      |j $ {} (:text |200) (:type :leaf) (:at 1632898117608) (:by |B1y7Rc-Zz)
+                                      |r $ {} (:text |-200) (:type :leaf) (:at 1632898123522) (:by |B1y7Rc-Zz)
+                                    :type :expr
+                                    :at 1632898041926
+                                    :by |B1y7Rc-Zz
+                                :type :expr
+                                :at 1632898036472
+                                :by |B1y7Rc-Zz
                               |r $ {}
                                 :data $ {}
                                   |T $ {} (:text |:on-pointertap) (:type :leaf) (:at 1589820694889) (:by |B1y7Rc-Zz) (:id |bD9V0I_fNd5)

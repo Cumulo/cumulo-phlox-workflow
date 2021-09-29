@@ -126,6 +126,7 @@
                   :messages $ or
                     -> (:messages session) (.to-list) (map last)
                     []
+                  :position $ [] 200 -200
                   :on-pointertap $ fn (message d!) (d! :session/remove-message message)
     |app.schema $ {}
       :ns $ quote (ns app.schema)
