@@ -106,11 +106,11 @@
                 comp-status store $ [] 40 (- js/window.innerHeight 52)
                 when dev? $ comp-reel
                   {}
-                    :position $ [] 200 (- js/window.innerHeight 60)
+                    :position $ [] 0 (- js/window.innerHeight 60)
                     :size $ :reel-length store
                 if (nil? store)
                   text $ {} (:text "\"Client is offline...")
-                    :position $ [] 120 60
+                    :position $ [] -80 -40
                     :style $ {} (:font-family ui/font-fancy)
                       :fill $ hslx 0 0 50
                       :font-size 40
@@ -211,7 +211,7 @@
             repeat! 600 $ fn () (persist-db!)
         |*loop-trigger $ quote (defatom *loop-trigger 0)
         |on-exit! $ quote
-          defn on-exit! (code) (persist-db!)
+          defn on-exit! (? code) (persist-db!)
             ; println "\"exit code is:" $ pr-str code
             js/process.exit
         |dispatch! $ quote
@@ -269,7 +269,7 @@
               container ({})
                 comp-button $ {}
                   :text $ :username state
-                  :position $ [] 200 200
+                  :position $ [] -200 -100
                   :on-pointertap $ fn (e d!)
                     request-text! e
                       {} (:placeholder "\"username")
@@ -278,7 +278,7 @@
                         d! cursor $ assoc state :username result
                 comp-button $ {}
                   :text $ :password state
-                  :position $ [] 200 260
+                  :position $ [] -200 -40
                   :on-pointertap $ fn (e d!)
                     request-text! e
                       {} (:placeholder "\"password")
@@ -286,11 +286,11 @@
                       fn (result)
                         d! cursor $ assoc state :password result
                 comp-button $ {} (:text "\"Sign up")
-                  :position $ [] 200 320
+                  :position $ [] -100 20
                   :on-pointertap $ fn (e d!) (d! :user/sign-up pass)
                     .setItem js/localStorage (:storage-key config/site) (format-cirru-edn pass)
                 comp-button $ {} (:text "\"Log in")
-                  :position $ [] 270 320
+                  :position $ [] -30 20
                   :on-pointertap $ fn (e d!) (d! :user/log-in pass)
                     .setItem js/localStorage (:storage-key config/site) (format-cirru-edn pass)
     |app.twig.container $ {}
@@ -373,9 +373,10 @@
                 cursor $ :cursor states
                 state $ or (:data states)
                   {} $ :point ([] 80 40)
-              container ({})
+              container
+                {} $ :position ([] -400 -300)
                 comp-button $ {} (:text "\"Add")
-                  :position $ [] 320 20
+                  :position $ [] 160 0
                   :on-pointertap $ fn (e d!) (d! :workspace/add-point nil)
                 rect
                   {}
@@ -596,7 +597,11 @@
                 dispatch! :user/log-in $ parse-cirru-edn raw
               do $ println "\"Found no storage."
         |reload! $ quote
-          defn reload! () (render-app! true) (println "\"Code updated.")
+          defn reload! () (remove-watch *states :change) (remove-watch *store :change)
+            add-watch *states :change $ fn (s p) (render-app! false)
+            add-watch *store :change $ fn (s p) (render-app! false)
+            render-app! true
+            println "\"Code updated."
     |app.config $ {}
       :ns $ quote (ns app.config)
       :defs $ {}

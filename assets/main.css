@@ -2,6 +2,8 @@
 body {
   margin: 0;
   overscroll-behavior-y: none;
+
+  font-size: 0;
 }
 
 body * {
