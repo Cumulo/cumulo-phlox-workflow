@@ -1,0 +1,40 @@
+name: Inspect official legacy recovery without source writes
+on:
+  push:
+    branches: [prepare/legacy-recovery-inspect031]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6.5.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: calcit-lang/setup-calcit@v1.5.0
+        with:
+          tools: calcit
+          version: 0.31.0-alpha.5
+      - uses: actions/checkout@v7.0.1
+        with:
+          repository: WebGPU-Art/lutra-crafts
+          ref: b708a66f8492ed1582da9e57e635b5e47d551055
+          path: reference-lutra
+          persist-credentials: false
+      - name: Inspect public legacy snapshots with dry-run only
+        run: node inspect-recovery.mjs
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: recovery-diagnostics
+          path: |
+            recovery-diagnostics/*.json
+            recovery-diagnostics/*.log
+            recovery-diagnostics/*.stdout
+            recovery-diagnostics/*.stderr
+          if-no-files-found: warn
