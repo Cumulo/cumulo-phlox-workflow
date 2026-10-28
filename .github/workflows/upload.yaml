@@ -1,4 +1,4 @@
-name: Try to upload
+name: Validate and upload
 
 on:
   push:
@@ -6,84 +6,109 @@ on:
       - main
   pull_request: {}
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
-    - uses: actions/checkout@v1
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
-    - name: Get yarn cache
-      id: yarn-cache
-      run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/setup-node@v6.5.0
+        with:
+          node-version: 24
+          package-manager-cache: false
 
-    - uses: actions/cache@v2
-      name: Cache node modules of yarn
-      with:
-        path: ${{ steps.yarn-cache.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.18.0 --activate
 
-    - name: ACTIONS_ALLOW_UNSECURE_COMMANDS
-      id: ACTIONS_ALLOW_UNSECURE_COMMANDS
-      run: echo 'ACTIONS_ALLOW_UNSECURE_COMMANDS=true' >> $GITHUB_ENV
+      - uses: calcit-lang/setup-calcit@v1.5.0
+        with:
+          tools: calcit,caps
+          deps-file: deps.cirru
+          caps-version: 0.1.1
 
-    - name: add cr
-      run: |
-        mkdir -p $GITHUB_WORKSPACE/bin
-        wget -O $GITHUB_WORKSPACE/bin/cr https://github.com/calcit-lang/calcit/releases/download/0.6.1/cr
-        chmod +x $GITHUB_WORKSPACE/bin/cr
-        echo "::add-path::$GITHUB_WORKSPACE/bin"
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          caps --strict --ci
+          yarn install --immutable
+          caps verify --toolchain
 
-    - name: "prepare modules"
-      run: >
-        mkdir -p ~/.config/calcit/modules/ && cd ~/.config/calcit/modules/
-        && git clone https://github.com/calcit-lang/lilac.git
-        && git clone https://github.com/calcit-lang/memof.git
-        && git clone https://github.com/Respo/respo-ui.calcit.git
-        && git clone https://github.com/calcit-lang/recollect.git
-        && git clone https://github.com/Cumulo/cumulo-util.calcit.git
-        && git clone https://github.com/Cumulo/cumulo-reel.calcit.git
-        && git clone https://github.com/mvc-works/ws-edn.calcit.git
-        && git clone https://github.com/Phlox-GL/phlox.git
-        && git clone https://github.com/calcit-lang/bisection-key.git
-        && git clone https://github.com/mvc-works/pointed-prompt.git
-        && git clone https://github.com/calcit-lang/calcit-wss.git
-        && git clone https://github.com/calcit-lang/calcit.std.git
+      - name: Check Calcit entries and attached tests
+        run: |
+          set -euo pipefail
+          test -f calcit.cirru
+          test -f deps.cirru
+          test ! -e compact.cirru
+          test ! -e package.cirru
+          calcit edit format
+          git diff --exit-code -- calcit.cirru
+          calcit --check-only
+          calcit --entry server --check-only
+          calcit fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
+          calcit --entry server fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
+          calcit --entry server test --require-match
+          calcit analyze weak-types --only deprecated-call --summary-only --format json | jq -e '.data.summary.calls == 0'
 
-    - run: cr --entry server --emit-ir -1
+      - name: Build frontend with CDN paths
+        id: assets
+        env:
+          CDN_ORIGIN: https://cos-sh.tiye.me
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then prefix="${GITHUB_REPOSITORY}/pr/${PR_NUMBER}/${GITHUB_RUN_ID}/${GITHUB_RUN_ATTEMPT}/"; else prefix="${GITHUB_REPOSITORY}/"; fi
+          base_url="${CDN_ORIGIN}/${prefix}"
+          echo "prefix=$prefix" >> "$GITHUB_OUTPUT"
+          echo "base-url=$base_url" >> "$GITHUB_OUTPUT"
+          export VITE_BASE_URL="$base_url"
+          yarn compile-page
+          yarn release-page
 
-    - run: yarn && yarn compile-page && yarn release-page
+      - name: Upload frontend to COS and verify public files
+        if: github.actor != 'dependabot[bot]' && (github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.user.login != 'dependabot[bot]'))
+        uses: worktools/cos-upload-action@v1.2.0
+        with:
+          source-dir: dist
+          bucket: ${{ secrets.COS_BUCKET }}
+          region: ap-shanghai
+          prefix: ${{ steps.assets.outputs.prefix }}
+          public-base-url: ${{ steps.assets.outputs.base-url }}
+          secret-id: ${{ secrets.COS_SECRET_ID }}
+          secret-key: ${{ secrets.COS_SECRET_KEY }}
+          verify-attempts: 6
 
-    - run: mkdir -p dist-server && cp compact.cirru dist-server && cp package.json dist-server/
-      name: Copy server scripts
+      - name: Deploy frontend
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Pendect/action-rsyncer@v2.0.0
+        env:
+          DEPLOY_KEY: ${{ secrets.rsync_private_key }}
+        with:
+          flags: '-avzr --progress'
+          options: ''
+          ssh_options: ''
+          src: 'dist/*'
+          dest: 'rsync-user@tiye.me:/web-assets/repo/${{ github.repository }}'
 
-    - name: Upload web assets
-      id: deploy
-      uses: Pendect/action-rsyncer@v1.1.0
-      env:
-        DEPLOY_KEY: ${{secrets.rsync_private_key}}
-      with:
-        flags: '-avzr --progress'
-        options: ''
-        ssh_options: ''
-        src: 'dist/*'
-        dest: 'rsync-user@tiye.me:/web-assets/repo/${{ github.repository }}'
+      - name: Prepare backend source
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: mkdir -p dist-server && cp calcit.cirru deps.cirru package.json dist-server/
 
-    - name: Display status from deploy
-      run: echo "${{ steps.deploy.outputs.status }}"
-
-    - name: Upload server script
-      id: deploy-server
-      uses: Pendect/action-rsyncer@v1.1.0
-      env:
-        DEPLOY_KEY: ${{secrets.rsync_private_key}}
-      with:
-        flags: '-avzr --progress'
-        options: ''
-        ssh_options: ''
-        src: 'dist-server/*'
-        dest: 'rsync-user@tiye.me:/servers/cumulo-phlox-workflow/'
-
-    - name: Display status from deploy
-      run: echo "${{ steps.deploy-server.outputs.status }}"
+      - name: Deploy backend source
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: Pendect/action-rsyncer@v2.0.0
+        env:
+          DEPLOY_KEY: ${{ secrets.rsync_private_key }}
+        with:
+          flags: '-avzr --progress'
+          options: ''
+          ssh_options: ''
+          src: 'dist-server/*'
+          dest: 'rsync-user@tiye.me:/servers/cumulo-phlox-workflow/'
