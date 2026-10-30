@@ -49,9 +49,12 @@ jobs:
           test ! -e compact.cirru
           test ! -e package.cirru
           calcit edit format
-          git diff --exit-code -- calcit.cirru
-          calcit --check-only
-          calcit --entry server --check-only
+          git diff --exit-code --quiet -- calcit.cirru
+          calcit --check-only --ns app.client --ns app.comp.container --ns app.comp.profile \
+            --ns app.comp.reel --ns app.comp.signin --ns app.comp.workspace
+          calcit --entry server --check-only --ns app.server --ns app.config --ns app.schema \
+            --ns app.twig.container --ns app.twig.user --ns app.updater --ns app.updater.router \
+            --ns app.updater.session --ns app.updater.user --ns app.updater.workspace
           calcit fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
           calcit --entry server fix --workflow strict --verify --format json | jq -e '.data.workflow.status == "passed" and .diagnostics == []'
           calcit --entry server test --require-match
