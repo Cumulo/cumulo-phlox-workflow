@@ -12,3 +12,9 @@ yarn-error.log
 backups/
 
 storage.cirru
+
+.calcit/
+
+.yarn/
+
+dist-server/
