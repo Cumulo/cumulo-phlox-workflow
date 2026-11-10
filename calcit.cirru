@@ -494,7 +494,7 @@
               create-list :container ({})
                 -> points (.keys) (.to-list)
                   .map $ fn (k)
-                    hint-fn $ Fn String $ -> (List Dynamic)
+                    hint-fn $ Fn String $ -> (Tuple String phlox.schema/PhloxElement)
                     let
                         point $ .unwrap $ .get points k
                       [] k $ container ({})
