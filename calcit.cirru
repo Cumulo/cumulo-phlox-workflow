@@ -21,9 +21,9 @@
           :examples $ []
           :schema $ quote $ Ref (Map Tag Dynamic)
         '*store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defref *store (Option :none)
+          :code $ quote $ defref *store None
           :examples $ []
-          :schema $ quote $ Ref (Option app.schema/ClientStore)
+          :schema $ quote $ Ref (Option schema/ClientStore)
         'FontObserverHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait FontObserverHost
             .load! $ Fn app.client/FontObserverHost $ -> js-ffi.shared/PromiseHost
@@ -47,7 +47,7 @@
                     , &unit
                   :on-close $ fn (event)
                     hint-fn $ Fn Dynamic $ -> Unit
-                    reset! *store $ Option :none
+                    reset! *store None
                     shared/console-error! "|Lost connection!"
                     , &unit
                   :on-data on-server-data
@@ -116,7 +116,7 @@
                   :patch changes
                   match (schema/apply-store-patch @*store changes)
                     (:ok store)
-                      reset! *store $ Option :some store
+                      reset! *store $ Some store
                     (:err detail) (println "|Rejected store patch:" detail)
             , &unit
           :examples $ []
@@ -150,7 +150,7 @@
           :code $ quote $ defn send-op! (op)
             ws-send! $ schema/op-wire op
           :examples $ []
-          :schema $ quote $ Fn app.schema/Op (-> Unit)
+          :schema $ quote $ Fn schema/Op (-> Unit)
         'simulate-login! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn simulate-login! ()
             match
@@ -232,7 +232,7 @@
                     , content
                   [] content
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (Option app.schema/ClientStore) (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Option schema/ClientStore) (-> phlox.schema/PhloxElement)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require (respo-ui.core :as ui)
@@ -272,7 +272,7 @@
                   browser/storage-remove! $ :storage-key config/site
                   , &unit
           :examples $ []
-          :schema $ quote $ Fn app.schema/ClientUser (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn schema/ClientUser (-> phlox.schema/PhloxElement)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.profile
           :require
@@ -377,7 +377,7 @@
                   :font-size 16
                   :font-weight 500
           :examples $ []
-          :schema $ quote $ Fn (Option app.schema/ClientStore) (List Number) (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn (Option schema/ClientStore) (List Number) (-> phlox.schema/PhloxElement)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.reel
           :require
@@ -537,7 +537,7 @@
           :code $ quote $ def site
             Site :port 11019 :title "|Cumulo Phlox" :icon |http://cdn.tiye.me/logo/cumulo.png :dev-ui |http://localhost:8100/main.css :release-ui |http://cdn.tiye.me/favored-fonts/main.css :cdn-url |http://cdn.tiye.me/cumulo-phlox-workflow/ :theme |#eeeeff :storage-key |cumulo-phlox-workflow :storage-file |storage.cirru
           :examples $ []
-          :schema $ quote app.config/Site
+          :schema $ quote Site
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.config
     'app.schema $ %{} 'FileEntry
@@ -627,8 +627,8 @@
                 Result :err $ patch-error-message detail
               (:ok value) (decode-client-store value)
           :examples $ []
-          :schema $ quote $ Fn (Option app.schema/ClientStore) (List recollect.schema/change-op)
-            -> $ Result app.schema/ClientStore String
+          :schema $ quote $ Fn (Option ClientStore) (List recollect.schema/change-op)
+            -> $ Result ClientStore String
           :tests $ [] $ %{} 'TestEntry
             :name |roundtrips-initial-profile-and-point-wire-patches
             :code $ quote $ let
@@ -643,28 +643,28 @@
                         apply-store-patch store changes
                 base $ ClientStore :logged-in? true :session
                   struct-with session
-                    :id $ Option :some 1
-                    :user-id $ Option :some |u1
+                    :id $ Some 1
+                    :user-id $ Some |u1
                     :messages $ {} $ |m1 (Message :id |m1 :text |hello)
                   , :user
-                    Option :some $ ClientUser :name |demo :id |u1 :nickname (Option :some |nick) :avatar $ Option :none
+                    Some $ ClientUser :name |demo :id |u1 :nickname (Some |nick) :avatar None
                     , :router router :count 1 :color 0xcc22bb :reel-length 0 :points $ {}
                       |a $ [] 320 80
                 next $ struct-with base
                   :router $ struct-with router (:name :profile)
-                    :router $ Option :some $ struct-with router (:name :home)
-                    :data $ Option :some $ {}
-                      1 $ Option :some |demo
+                    :router $ Some $ struct-with router (:name :home)
+                    :data $ Some $ {}
+                      1 $ Some |demo
                       :message $ Message :id |opaque :text |payload
                   :reel-length 1
                   :points $ {} $ |a ([] 200 90)
-                initial $ receive (Option :none)
-                  format-cirru-edn $ {} (:kind :patch)
+                initial $ receive None $ format-cirru-edn
+                  {} (:kind :patch)
                     :data $ diff-twig nil base $ {} (:key :id)
                 updated $ match initial
                   (:err detail) (raise detail)
                   (:ok store)
-                    receive (Option :some store)
+                    receive (Some store)
                       format-cirru-edn $ {} (:kind :patch)
                         :data $ diff-twig base next $ {} (:key :id)
               assert= (Result :ok base) initial
@@ -674,15 +674,15 @@
           :code $ quote $ def client-wire-classes
             {} (:Option Option) (:change-op change-op) (:Router router) (:Session session)
               :Message $ Message :id | :text |
-              :ClientUser $ ClientUser :name | :id | :nickname (Option :none) :avatar $ Option :none
-              :ClientStore $ ClientStore :logged-in? false :session session :user (Option :none) :router router :count 0 :color 0 :reel-length 0 :points $ {}
+              :ClientUser $ ClientUser :name | :id | :nickname None :avatar None
+              :ClientStore $ ClientStore :logged-in? false :session session :user None :router router :count 0 :color 0 :reel-length 0 :points $ {}
           :examples $ []
           :schema $ quote $ Map Tag Dynamic
         'database $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def database
             Db :sessions ({}) :users ({}) :points $ {}
           :examples $ []
-          :schema $ quote app.schema/Db
+          :schema $ quote Db
         'decode-action-op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-action-op (value)
             if (enum? value)
@@ -697,7 +697,7 @@
               Result :err "|Expected an operation enum"
           :examples $ []
           :schema $ quote $ Fn Dynamic
-            -> $ Result app.schema/Op String
+            -> $ Result Op String
         'decode-client-op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-op (tag data)
             try
@@ -738,7 +738,7 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Tag Dynamic
-            -> $ Result app.schema/Op String
+            -> $ Result Op String
         'decode-client-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-store (value)
             try
@@ -760,7 +760,7 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
-            -> $ Result app.schema/ClientStore String
+            -> $ Result ClientStore String
         'decode-database $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-database (value)
             try
@@ -792,7 +792,7 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
-            -> $ Result app.schema/Db String
+            -> $ Result Db String
           :tests $ []
             %{} 'TestEntry (:name |legacy-users-sessions-points-roundtrip)
               :code $ quote $ match
@@ -804,9 +804,9 @@
                       .unwrap $ get (:points db) |a
                     assert= |demo $ :name $ .unwrap
                       get (:users db) |u1
-                    assert= (Option :none)
-                      :avatar $ .unwrap $ get (:users db) |u1
-                    assert= (Option :some |u1)
+                    assert= None $ :avatar $ .unwrap
+                      get (:users db) |u1
+                    assert= (Some |u1)
                       :user-id $ .unwrap $ get (:sessions db) 1
                     assert= (Result :ok db)
                       app.schema/parse-database $ format-cirru-edn db
@@ -842,7 +842,7 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
-            -> $ Result app.schema/ServerPacket String
+            -> $ Result ServerPacket String
         'decode-ui-action $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-ui-action (value)
             if (enum? value)
@@ -896,7 +896,7 @@
               Result :err "|Expected an action enum"
           :examples $ []
           :schema $ quote $ Fn Dynamic
-            -> $ Result app.schema/UiAction String
+            -> $ Result UiAction String
         'op-wire $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn op-wire (op)
             match op
@@ -929,14 +929,14 @@
                 {} (:kind :op) (:op :workspace/update-point)
                   :data $ [] key point
           :examples $ []
-          :schema $ quote $ Fn app.schema/Op
+          :schema $ quote $ Fn Op
             -> $ Map Tag Dynamic
         'optional-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn optional-input (input)
             match input
-              (:none) (Option :none)
+              (:none) None
               (:some value)
-                if (nil? value) (Option :none) value
+                if (nil? value) None value
           :examples $ []
           :schema $ quote $ Fn (Option Dynamic) (-> Dynamic)
         'parse-client-packet $ %{} 'CodeEntry (:doc |)
@@ -966,7 +966,7 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn String
-            -> $ Result app.schema/ClientPacket String
+            -> $ Result ClientPacket String
           :tests $ [] $ %{} 'TestEntry (:name |preserves-account-message-and-point-wire)
             :code $ quote $ do
               assert=
@@ -996,12 +996,12 @@
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn String
-            -> $ Result app.schema/Db String
+            -> $ Result Db String
         'router $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def router
-            Router :name :home :title (Option :none) :data (Option :none) :router $ Option :none
+            Router :name :home :title None :data None :router None
           :examples $ []
-          :schema $ quote app.schema/Router
+          :schema $ quote Router
         'router-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn router-input (value)
             let
@@ -1013,7 +1013,7 @@
                   , :data $ optional-input $ get source :data
                 , :router $ if
                   or (map? nested) (struct? nested)
-                  Option :some $ router-input nested
+                  Some $ router-input nested
                   if (enum? nested)
                     if
                       match (enum-definition nested)
@@ -1021,7 +1021,7 @@
                         (:none) false
                       match nested
                         (:some child)
-                          Option :some $ router-input child
+                          Some $ router-input child
                         (:none) nested
                         _ nested
                       , nested
@@ -1031,9 +1031,9 @@
             -> $ Map Tag Dynamic
         'session $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def session
-            Session :user-id (Option :none) :id (Option :none) :nickname (Option :none) :router router :messages $ {}
+            Session :user-id None :id None :nickname None :router router :messages $ {}
           :examples $ []
-          :schema $ quote app.schema/Session
+          :schema $ quote Session
         'session-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn session-input (value)
             let
@@ -1090,7 +1090,7 @@
         '*client-caches $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *client-caches ({})
           :examples $ []
-          :schema $ quote $ Ref (Map Number app.schema/ClientStore)
+          :schema $ quote $ Ref (Map Number schema/ClientStore)
         '*initial-db $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *initial-db
             if
@@ -1103,16 +1103,16 @@
                     raise $ str "|Invalid stored database: " detail
               do (println "|Found no data") schema/database
           :examples $ []
-          :schema $ quote $ Ref app.schema/Db
+          :schema $ quote $ Ref schema/Db
         '*reader-reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reader-reel @*reel
           :examples $ []
-          :schema $ quote $ Ref (cumulo-reel.core/ReelState app.schema/Db)
+          :schema $ quote $ Ref (ReelState schema/Db)
         '*reel $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *reel
             ReelState :base @*initial-db :db @*initial-db :records ([]) :merged? false
           :examples $ []
-          :schema $ quote $ Ref (cumulo-reel.core/ReelState app.schema/Db)
+          :schema $ quote $ Ref (ReelState schema/Db)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op sid)
             let
@@ -1124,7 +1124,7 @@
                 _ $ reset! *reel $ reel-reducer @*reel updater op sid op-id op-time config/dev?
               , &unit
           :examples $ []
-          :schema $ quote $ Fn app.schema/Op Number (-> Unit)
+          :schema $ quote $ Fn schema/Op Number (-> Unit)
         'get-backup-path! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn get-backup-path! ()
             let
@@ -1194,7 +1194,7 @@
           :code $ quote $ defn replay-updater (db op sid op-id op-time)
             updater db (decode-map-as op 'app.schema/Op) (decode-map-as sid 'Number) (decode-map-as op-id 'String) (decode-map-as op-time 'Number)
           :examples $ []
-          :schema $ quote $ Fn app.schema/Db Dynamic Dynamic Dynamic Dynamic (-> app.schema/Db)
+          :schema $ quote $ Fn schema/Db Dynamic Dynamic Dynamic Dynamic (-> schema/Db)
           :tests $ [] $ %{} 'TestEntry (:name |replays-concrete-operation-history)
             :code $ quote $ let
                 reel $ ReelState :base schema/database :db schema/database :records ([]) :merged? false
@@ -1227,7 +1227,7 @@
                   (:blob sid _) (println "|Ignoring binary client packet:" sid)
                 , &unit
           :examples $ []
-          :schema $ quote $ Fn Number (-> calcit.core/FfiTask)
+          :schema $ quote $ Fn Number (-> FfiTask)
         'storage-file $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def storage-file
             if (empty? calcit-dirname)
@@ -1247,7 +1247,7 @@
                   (:some session)
                     let
                         old-store $ get @*client-caches sid
-                        new-store $ twig-container db session $ :records reel
+                        new-store $ twig-container db session $ .len (:records reel)
                         changes $ match old-store
                           (:some value)
                             diff-twig value new-store $ {} $ :key :id
@@ -1266,7 +1266,7 @@
                 , &unit
               , @complete?
           :examples $ []
-          :schema $ quote $ Fn (cumulo-reel.core/ReelState app.schema/Db) (-> Bool)
+          :schema $ quote $ Fn (ReelState schema/Db) (-> Bool)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.server
           :require (app.schema :as schema)
@@ -1285,12 +1285,12 @@
     'app.twig.container $ %{} 'FileEntry
       :defs $ {}
         'twig-container $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn twig-container (db session records)
+          :code $ quote $ defn twig-container (db session record-count)
             let
                 logged-in? $ .some? $ :user-id session
               schema/ClientStore :logged-in? logged-in? :session session :user
                 match (:user-id session)
-                  (:none) (Option :none)
+                  (:none) None
                   (:some id)
                     .map
                       get (:users db) id
@@ -1300,19 +1300,17 @@
                     :data $ if logged-in?
                       match
                         :name $ :router session
-                        :home $ Option :none
-                        :profile $ Option :some $ twig-members (:sessions db) (:users db)
-                        _ $ Option :some $ {}
-                      Option :none
+                        :home None
+                        :profile $ Some $ twig-members (:sessions db) (:users db)
+                        _ $ Some $ {}
+                      , None
                   , :count
                     .len $ :sessions db
                     , :color
-                      rand-int (Option :some 0xffffff) (Option :none)
-                      , :reel-length (.len records) :points $ :points db
+                      rand-int (Some 0xffffff) None
+                      , :reel-length record-count :points $ :points db
           :examples $ []
-          :schema $ quote $ Fn app.schema/Db app.schema/Session
-            List $ List Dynamic
-            -> app.schema/ClientStore
+          :schema $ quote $ Fn schema/Db schema/Session Number (-> schema/ClientStore)
           :tests $ [] $ %{} 'TestEntry (:name |publishes-account-without-password)
             :code $ quote $ let
                 db $ app.updater/updater
@@ -1320,16 +1318,15 @@
                   schema/Op :user/sign-up |demo |pw
                   , 1 |u1 0
                 session $ .unwrap $ get (:sessions db) 1
-                store $ twig-container db session $ []
+                store $ twig-container db session 0
                 user $ .unwrap $ :user store
               assert= true $ :logged-in? store
               assert= |demo $ :name user
               assert= false $ contains? (.to-map user) :password
               assert=
-                {} $ 1 $ Option :some |demo
+                {} $ 1 $ Some |demo
                 twig-members (:sessions db) (:users db)
-              assert= (Option :none)
-                :data $ :router store
+              assert= None $ :data $ :router store
             :tags $ #{} :server
         'twig-members $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn twig-members (sessions users)
@@ -1337,14 +1334,14 @@
               hint-fn $ Fn Number app.schema/Session $ ->
                 MapEntryDecision Number $ Option String
               MapEntryDecision :keep sid $ match (:user-id session)
-                (:none) (Option :none)
+                (:none) None
                 (:some id)
                   .map (get users id)
                     fn (user)
                       hint-fn $ Fn app.schema/User $ -> String
                       :name user
           :examples $ []
-          :schema $ quote $ Fn (Map Number app.schema/Session) (Map String app.schema/User)
+          :schema $ quote $ Fn (Map Number schema/Session) (Map String schema/User)
             -> $ Map Number $ Option String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.twig.container
@@ -1358,7 +1355,7 @@
           :code $ quote $ defn twig-user (user)
             schema/ClientUser :name (:name user) :id (:id user) :nickname (:nickname user) :avatar $ :avatar user
           :examples $ []
-          :schema $ quote $ Fn app.schema/User (-> app.schema/ClientUser)
+          :schema $ quote $ Fn schema/User (-> schema/ClientUser)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.twig.user
           :require $ app.schema :as schema
@@ -1395,20 +1392,20 @@
                   , 1 |r1 10
                 message-removed $ updater wrong-password (app.schema/Op :session/remove-message |w1) 1 |r2 10
                 disconnected $ updater routed (app.schema/Op :session/disconnect) 1 |x1 10
-              assert= (Option :some 1)
+              assert= (Some 1)
                 :id $ .unwrap $ get (:sessions connected) 1
-              assert= (Option :some |u1)
+              assert= (Some |u1)
                 :user-id $ .unwrap $ get (:sessions signed-up) 1
               assert= |demo $ :name $ .unwrap
                 get (:users signed-up) |u1
               assert= (calcit.std.hash/md5 |pw)
                 :password $ .unwrap $ get (:users signed-up) |u1
-              assert= (Option :none)
-                :avatar $ .unwrap $ get (:users signed-up) |u1
-              assert= (Option :none)
-                :user-id $ .unwrap $ get (:sessions signed-out) 1
-              assert= (Option :none)
-                :user-id $ .unwrap $ get (:sessions wrong-password) 1
+              assert= None $ :avatar $ .unwrap
+                get (:users signed-up) |u1
+              assert= None $ :user-id $ .unwrap
+                get (:sessions signed-out) 1
+              assert= None $ :user-id $ .unwrap
+                get (:sessions wrong-password) 1
               assert= "|Wrong password for demo" $ :text $ .unwrap
                 get
                   :messages $ .unwrap $ get (:sessions wrong-password) 1
@@ -1417,7 +1414,7 @@
                 get
                   :messages $ .unwrap $ get (:sessions missing-user) 1
                   , |m1
-              assert= (Option :some |u1)
+              assert= (Some |u1)
                 :user-id $ .unwrap $ get (:sessions signed-in) 1
               assert= 1 $ .len $ :users duplicate
               assert= "|Name is taken: demo" $ :text $ .unwrap
@@ -1453,14 +1450,14 @@
         'connect $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn connect (db op-data sid op-id op-time)
             struct-with db $ :sessions $ .assoc (:sessions db) sid
-              struct-with schema/session $ :id $ Option :some sid
+              struct-with schema/session $ :id $ Some sid
           :examples $ []
-          :schema $ quote $ Fn app.schema/Db Unit Number String Number (-> app.schema/Db)
+          :schema $ quote $ Fn schema/Db Unit Number String Number (-> schema/Db)
         'disconnect $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn disconnect (db op-data sid op-id op-time)
             struct-with db $ :sessions $ .dissoc (:sessions db) sid
           :examples $ []
-          :schema $ quote $ Fn app.schema/Db Unit Number String Number (-> app.schema/Db)
+          :schema $ quote $ Fn schema/Db Unit Number String Number (-> schema/Db)
         'remove-message $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn remove-message (db op-data sid op-id op-time)
             match
@@ -1470,7 +1467,7 @@
                 struct-with db $ :sessions $ .assoc (:sessions db) sid
                   struct-with session $ :messages $ .dissoc (:messages session) op-data
           :examples $ []
-          :schema $ quote $ Fn app.schema/Db String Number String Number (-> app.schema/Db)
+          :schema $ quote $ Fn schema/Db String Number String Number (-> schema/Db)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater.session
           :require $ app.schema :as schema
@@ -1499,7 +1496,7 @@
                       if
                         = (md5 password) (:password user)
                         struct-with db $ :sessions $ .assoc (:sessions db) sid
-                          struct-with session $ :user-id $ Option :some (:id user)
+                          struct-with session $ :user-id $ Some (:id user)
                         struct-with db $ :sessions $ .assoc (:sessions db) sid
                           struct-with session $ :messages $ .assoc (:messages session) op-id
                             app.schema/Message :id op-id :text $ str "|Wrong password for " username
@@ -1512,7 +1509,7 @@
               (:none) db
               (:some session)
                 struct-with db $ :sessions $ .assoc (:sessions db) sid
-                  struct-with session $ :user-id $ Option :none
+                  struct-with session $ :user-id None
           :examples $ []
           :schema $ quote $ Fn app.schema/Db Unit Number String Number (-> app.schema/Db)
         'sign-up $ %{} 'CodeEntry (:doc |)
@@ -1535,8 +1532,8 @@
                         app.schema/Message :id op-id :text $ str "|Name is taken: " username
                     struct-with
                       struct-with db $ :sessions $ .assoc (:sessions db) sid
-                        struct-with session $ :user-id $ Option :some op-id
-                      :users $ .assoc (:users db) op-id $ app.schema/User :id op-id :name username :nickname (Option :some username) :password (md5 password) :avatar (Option :none)
+                        struct-with session $ :user-id $ Some op-id
+                      :users $ .assoc (:users db) op-id $ app.schema/User :id op-id :name username :nickname (Some username) :password (md5 password) :avatar None
           :examples $ []
           :schema $ quote $ Fn app.schema/Db (List String) Number String Number (-> app.schema/Db)
       :ns $ %{} 'NsEntry (:doc |)
@@ -1551,8 +1548,8 @@
               struct-with db $ :points $ if (.empty? points)
                 .assoc points bisection/mid-id $ [] 320 80
                 assoc-append points $ []
-                  + 320 $ rand-int (Option :some 40) (Option :none)
-                  + 80 $ rand-int (Option :some 30) (Option :none)
+                  + 320 $ rand-int (Some 40) None
+                  + 80 $ rand-int (Some 30) None
           :examples $ []
           :schema $ quote $ Fn app.schema/Db Unit Number String Number (-> app.schema/Db)
         'update-point $ %{} 'CodeEntry (:doc |)
