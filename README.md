@@ -2,10 +2,10 @@
 
 使用 Phlox/Pixi 绘制前端、原生 Calcit WebSocket 服务端的实时应用模板。
 
-## 0.41.1 升级对使用者的影响
+## 0.42.1 升级对使用者的影响
 
 请一起更新前端与后端。原生后端继续运行 `calcit --entry server`，部署目录仍为
-`/servers/cumulo-phlox-workflow/`。部署前请在服务器安装配套 Calcit 0.41.1、正式模块
+`/servers/cumulo-phlox-workflow/`。部署前请在服务器安装配套 Calcit 0.42.1、正式模块
 和 native dylib。现有 rsync 只复制源码与清单，安装依赖和重启仍是独立步骤。
 
 旧 Map 存档、WebSocket 消息格式和登录存储键沿用原格式。界面状态路径使用
