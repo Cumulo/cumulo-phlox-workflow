@@ -42,11 +42,11 @@
               ws-connect! (str |ws:// host |: port)
                 {}
                   :on-open $ fn (event)
-                    hint-fn $ Fn Dynamic $ -> Unit
+                    hint-fn $ Fn JsObject $ -> Unit
                     simulate-login!
                     , &unit
                   :on-close $ fn (event)
-                    hint-fn $ Fn Dynamic $ -> Unit
+                    hint-fn $ Fn JsObject $ -> Unit
                     reset! *store None
                     shared/console-error! "|Lost connection!"
                     , &unit
@@ -93,7 +93,7 @@
               hint-fn $ Fn $ -> Unit
               render-app! false
             add-watch! *store :change $ fn (current previous)
-              hint-fn $ Fn (Option app.schema/ClientStore) (Option app.schema/ClientStore) (-> Unit)
+              hint-fn $ Fn (Option schema/ClientStore) (Option schema/ClientStore) (-> Unit)
               render-app! false
             add-watch! *states :change $ fn (current previous)
               hint-fn $ Fn (Map Tag Dynamic) (Map Tag Dynamic) (-> Unit)
@@ -124,7 +124,7 @@
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (remove-watch! *states :change) (remove-watch! *store :change)
             add-watch! *store :change $ fn (current previous)
-              hint-fn $ Fn (Option app.schema/ClientStore) (Option app.schema/ClientStore) (-> Unit)
+              hint-fn $ Fn (Option schema/ClientStore) (Option schema/ClientStore) (-> Unit)
               render-app! false
             add-watch! *states :change $ fn (current previous)
               hint-fn $ Fn (Map Tag Dynamic) (Map Tag Dynamic) (-> Unit)
@@ -633,7 +633,7 @@
             :name |roundtrips-initial-profile-and-point-wire-patches
             :code $ quote $ let
                 receive $ fn (store text)
-                  hint-fn $ Fn (Option app.schema/ClientStore) String $ -> (Result app.schema/ClientStore String)
+                  hint-fn $ Fn (Option ClientStore) String $ -> (Result ClientStore String)
                   match
                     decode-server-packet $ parse-cirru-edn text client-wire-classes
                     (:err detail) (Result :err detail)
@@ -734,7 +734,7 @@
                   Op :workspace/update-point key point
                 _ $ raise $ str "|Unknown client operation: " tag
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/Op String)
+                hint-fn $ Fn String $ -> (Result Op String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Tag Dynamic
@@ -756,7 +756,7 @@
                     :user user
                   , 'app.schema/ClientStore
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/ClientStore String)
+                hint-fn $ Fn String $ -> (Result ClientStore String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
@@ -788,7 +788,7 @@
                     , :points $ .unwrap-or (get source :points) ({})
                   , 'app.schema/Db
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/Db String)
+                hint-fn $ Fn String $ -> (Result Db String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
@@ -838,7 +838,7 @@
                     decode-map-as data $ List recollect.schema/change-op
                   _ $ Result :err "|Unknown server packet kind"
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/ServerPacket String)
+                hint-fn $ Fn String $ -> (Result ServerPacket String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn Dynamic
@@ -853,7 +853,7 @@
                       .map
                         try-decode-map-as cursor $ List app.schema/UiCoordKey
                         fn (path)
-                          hint-fn $ Fn (List app.schema/UiCoordKey) (-> app.schema/UiAction)
+                          hint-fn $ Fn (List UiCoordKey) (-> UiAction)
                           UiAction :states path state
                     (:effect/connect _)
                       Result :ok $ UiAction :connect
@@ -876,7 +876,7 @@
                         (:reel/merge) (decode-client-op :reel/merge nil)
                         _ $ Result :err "|Unknown widget action"
                       fn (op)
-                        hint-fn $ Fn app.schema/Op $ -> app.schema/UiAction
+                        hint-fn $ Fn Op $ -> UiAction
                         UiAction :server op
                 (:some definition)
                   if (= definition UiAction)
@@ -884,13 +884,13 @@
                       (:server op)
                         .map (decode-action-op op)
                           fn (op)
-                            hint-fn $ Fn app.schema/Op $ -> app.schema/UiAction
+                            hint-fn $ Fn Op $ -> UiAction
                             UiAction :server op
                       _ $ try-decode-map-as value 'app.schema/UiAction
                     if (= definition Op)
                       .map (decode-action-op value)
                         fn (op)
-                          hint-fn $ Fn app.schema/Op $ -> app.schema/UiAction
+                          hint-fn $ Fn Op $ -> UiAction
                           UiAction :server op
                       Result :err "|Unknown UI action enum"
               Result :err "|Expected an action enum"
@@ -962,7 +962,7 @@
                       (:err detail) (Result :err detail)
                   _ $ Result :err "|Unknown client packet kind"
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/ClientPacket String)
+                hint-fn $ Fn String $ -> (Result ClientPacket String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn String
@@ -992,7 +992,7 @@
               decode-database $ parse-cirru-edn text $ {} (:Option Option)
                 :Message $ Message :id | :text |
               fn (detail)
-                hint-fn $ Fn String $ -> (Result app.schema/Db String)
+                hint-fn $ Fn String $ -> (Result Db String)
                 Result :err detail
           :examples $ []
           :schema $ quote $ Fn String
@@ -1331,14 +1331,14 @@
         'twig-members $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn twig-members (sessions users)
             filter-map-kv sessions $ fn (sid session)
-              hint-fn $ Fn Number app.schema/Session $ ->
+              hint-fn $ Fn Number schema/Session $ ->
                 MapEntryDecision Number $ Option String
               MapEntryDecision :keep sid $ match (:user-id session)
                 (:none) None
                 (:some id)
                   .map (get users id)
                     fn (user)
-                      hint-fn $ Fn app.schema/User $ -> String
+                      hint-fn $ Fn schema/User $ -> String
                       :name user
           :examples $ []
           :schema $ quote $ Fn (Map Number schema/Session) (Map String schema/User)
