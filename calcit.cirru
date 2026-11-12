@@ -54,7 +54,7 @@
                   :class-mapper schema/client-wire-classes
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (value)
             match (schema/decode-ui-action value)
@@ -67,7 +67,7 @@
                   (:connect) (connect!)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit)
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
         'load-fonts! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-fonts! (ready)
             let
@@ -106,7 +106,7 @@
             println "|App started!"
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'on-server-data $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn on-server-data (data)
             match (schema/decode-server-packet data)
@@ -120,7 +120,7 @@
                     (:err detail) (println "|Rejected store patch:" detail)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit)
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (remove-watch! *states :change) (remove-watch! *store :change)
             add-watch! *store :change $ fn (current previous)
@@ -133,7 +133,7 @@
             println "|Code updated."
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! (swap?)
             render!
@@ -145,7 +145,7 @@
               , dispatch! $ {} $ :swap? swap?
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Bool (-> Unit)
+          :schema $ quote $ Fn Bool (-> Unit) (:features :io :state)
         'send-op! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn send-op! (op)
             ws-send! $ schema/op-wire op
@@ -163,7 +163,7 @@
                   (:err detail) (println "|Rejected stored credentials:" detail)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.client
           :require
@@ -196,8 +196,10 @@
                       container ({})
                         if (:logged-in? store)
                           container ({})
-                            comp-workspace (>> states :workspace) (:points store)
-                          comp-signin $ >> states :signin
+                            comp-workspace
+                              decode-map-as (>> states :workspace) (Map app.schema/UiCoordKey Dynamic)
+                              :points store
+                          comp-signin $ decode-map-as (>> states :signin) (Map app.schema/UiCoordKey Dynamic)
                         match (:user store)
                           (:some user) (comp-profile user)
                           (:none)
@@ -232,7 +234,7 @@
                     , content
                   [] content
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (Option schema/ClientStore) (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Option schema/ClientStore) (-> phlox.schema/PhloxElement) (:features :io)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require (respo-ui.core :as ui)
@@ -377,7 +379,7 @@
                   :font-size 16
                   :font-weight 500
           :examples $ []
-          :schema $ quote $ Fn (Option schema/ClientStore) (List Number) (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn (Option schema/ClientStore) (List Number) (-> phlox.schema/PhloxElement) (:features :io)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.reel
           :require
@@ -453,7 +455,7 @@
                     browser/storage-set! (:storage-key config/site) (format-cirru-edn pass)
                     , &unit
           :examples $ []
-          :schema $ quote $ Fn (Map Dynamic Dynamic) (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn (Map schema/UiCoordKey Dynamic) (-> phlox.schema/PhloxElement) (:features :js-ffi)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.signin
           :require
@@ -512,9 +514,10 @@
                                   raise "|Expected two point coordinates"
                               , &unit
           :examples $ []
-          :schema $ quote $ Fn (Map Dynamic Dynamic)
+          :schema $ quote $ Fn (Map schema/UiCoordKey Dynamic)
             Map String $ List Number
             -> phlox.schema/PhloxElement
+            :features :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.workspace
           :require
@@ -1124,7 +1127,7 @@
                 _ $ reset! *reel $ reel-reducer @*reel updater op sid op-id op-time config/dev?
               , &unit
           :examples $ []
-          :schema $ quote $ Fn schema/Op Number (-> Unit)
+          :schema $ quote $ Fn schema/Op Number (-> Unit) (:features :io :state)
         'get-backup-path! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn get-backup-path! ()
             let
@@ -1155,11 +1158,11 @@
             on-control-c on-exit!
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'on-exit! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn on-exit! () (persist-db!) (; println "|exit code is...") (quit! 0)
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'persist-db! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-db! ()
             let
@@ -1171,7 +1174,7 @@
               check-write-file! backup-path file-content
               , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (println "|Code updated..")
             if (not config/dev?) (raise "|reloading only happens in dev mode")
@@ -1179,7 +1182,7 @@
             reset! *reel $ refresh-reel @*reel @*initial-db replay-updater
             render-loop!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'render-loop! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-loop! ()
             let
@@ -1189,7 +1192,7 @@
                 when (sync-clients! reel) (reset! *reader-reel reel)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'replay-updater $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn replay-updater (db op sid op-id op-time)
             updater db (decode-map-as op 'app.schema/Op) (decode-map-as sid 'Number) (decode-map-as op-id 'String) (decode-map-as op-time 'Number)
@@ -1227,13 +1230,14 @@
                   (:blob sid _) (println "|Ignoring binary client packet:" sid)
                 , &unit
           :examples $ []
-          :schema $ quote $ Fn Number (-> FfiTask)
+          :schema $ quote $ Fn Number (-> FfiTask) (:features :io :state)
         'storage-file $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def storage-file
             if (empty? calcit-dirname)
               str calcit-dirname $ :storage-file config/site
               str calcit-dirname |/ $ :storage-file config/site
           :examples $ []
+          :schema $ quote String
         'sync-clients! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn sync-clients! (reel)
             let
@@ -1266,7 +1270,7 @@
                 , &unit
               , @complete?
           :examples $ []
-          :schema $ quote $ Fn (ReelState schema/Db) (-> Bool)
+          :schema $ quote $ Fn (ReelState schema/Db) (-> Bool) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.server
           :require (app.schema :as schema)
