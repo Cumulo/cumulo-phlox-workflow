@@ -67,7 +67,7 @@
                   (:connect) (connect!)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
+          :schema $ quote $ Fn Input (-> Unit) (:generics Input) (:features :io :state)
         'load-fonts! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-fonts! (ready)
             let
@@ -120,7 +120,7 @@
                     (:err detail) (println "|Rejected store patch:" detail)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
+          :schema $ quote $ Fn Input (-> Unit) (:generics Input) (:features :io :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (remove-watch! *states :change) (remove-watch! *store :change)
             add-watch! *store :change $ fn (current previous)
@@ -844,8 +844,9 @@
                 hint-fn $ Fn String $ -> (Result ServerPacket String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result ServerPacket String
+            :generics Input
         'decode-ui-action $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-ui-action (value)
             if (enum? value)
@@ -898,8 +899,9 @@
                       Result :err "|Unknown UI action enum"
               Result :err "|Expected an action enum"
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result UiAction String
+            :generics Input
         'op-wire $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn op-wire (op)
             match op
