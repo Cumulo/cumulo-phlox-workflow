@@ -699,8 +699,9 @@
                     Result :err "|Expected an owned Op enum"
               Result :err "|Expected an operation enum"
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result Op String
+            :generics Input
         'decode-client-op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-op (tag data)
             try
@@ -1068,8 +1069,9 @@
               if (struct? value) (&struct:to-map value) value
               Map Tag Dynamic
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'user $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def user
             {} (:name nil) (:id nil) (:nickname nil) (:avatar nil) (:password nil)
