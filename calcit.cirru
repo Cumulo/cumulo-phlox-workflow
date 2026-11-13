@@ -1207,7 +1207,7 @@
           :code $ quote $ defn replay-updater (db op sid op-id op-time)
             updater db (decode-map-as op 'app.schema/Op) (decode-map-as sid 'Number) (decode-map-as op-id 'String) (decode-map-as op-time 'Number)
           :examples $ []
-          :schema $ quote $ Fn schema/Db Dynamic Dynamic Dynamic Dynamic (-> schema/Db)
+          :schema $ quote $ Fn schema/Db Operation SessionId OperationId OperationTime (-> schema/Db) (:generics Operation SessionId OperationId OperationTime)
           :tests $ [] $ %{} 'TestEntry (:name |replays-concrete-operation-history)
             :code $ quote $ let
                 reel $ ReelState :base schema/database :db schema/database :records ([]) :merged? false
