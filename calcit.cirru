@@ -67,7 +67,7 @@
                   (:connect) (connect!)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
+          :schema $ quote $ Fn Input (-> Unit) (:generics Input) (:features :io :state)
         'load-fonts! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn load-fonts! (ready)
             let
@@ -120,7 +120,7 @@
                     (:err detail) (println "|Rejected store patch:" detail)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :io :state)
+          :schema $ quote $ Fn Input (-> Unit) (:generics Input) (:features :io :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (remove-watch! *states :change) (remove-watch! *store :change)
             add-watch! *store :change $ fn (current previous)
@@ -699,8 +699,9 @@
                     Result :err "|Expected an owned Op enum"
               Result :err "|Expected an operation enum"
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result Op String
+            :generics Input
         'decode-client-op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-op (tag data)
             try
@@ -740,8 +741,9 @@
                 hint-fn $ Fn String $ -> (Result Op String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Tag Dynamic
+          :schema $ quote $ Fn Tag Input
             -> $ Result Op String
+            :generics Input
         'decode-client-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-store (value)
             try
@@ -762,8 +764,9 @@
                 hint-fn $ Fn String $ -> (Result ClientStore String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result ClientStore String
+            :generics Input
         'decode-database $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-database (value)
             try
@@ -794,8 +797,9 @@
                 hint-fn $ Fn String $ -> (Result Db String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result Db String
+            :generics Input
           :tests $ []
             %{} 'TestEntry (:name |legacy-users-sessions-points-roundtrip)
               :code $ quote $ match
@@ -844,8 +848,9 @@
                 hint-fn $ Fn String $ -> (Result ServerPacket String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result ServerPacket String
+            :generics Input
         'decode-ui-action $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-ui-action (value)
             if (enum? value)
@@ -898,8 +903,9 @@
                       Result :err "|Unknown UI action enum"
               Result :err "|Expected an action enum"
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result UiAction String
+            :generics Input
         'op-wire $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn op-wire (op)
             match op
@@ -1030,8 +1036,9 @@
                       , nested
                     , nested
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'session $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def session
             Session :user-id None :id None :nickname None :router router :messages $ {}
@@ -1058,16 +1065,18 @@
                       MapEntryDecision String $ Map Tag Dynamic
                     MapEntryDecision :keep key $ struct-input value
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'struct-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn struct-input (value)
             decode-map-as
               if (struct? value) (&struct:to-map value) value
               Map Tag Dynamic
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'user $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def user
             {} (:name nil) (:id nil) (:nickname nil) (:avatar nil) (:password nil)
@@ -1080,8 +1089,9 @@
                 .assoc source :nickname $ optional-input $ get source :nickname
                 , :avatar $ optional-input $ get source :avatar
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.schema
           :require
@@ -1197,7 +1207,7 @@
           :code $ quote $ defn replay-updater (db op sid op-id op-time)
             updater db (decode-map-as op 'app.schema/Op) (decode-map-as sid 'Number) (decode-map-as op-id 'String) (decode-map-as op-time 'Number)
           :examples $ []
-          :schema $ quote $ Fn schema/Db Dynamic Dynamic Dynamic Dynamic (-> schema/Db)
+          :schema $ quote $ Fn schema/Db Operation SessionId OperationId OperationTime (-> schema/Db) (:generics Operation SessionId OperationId OperationTime)
           :tests $ [] $ %{} 'TestEntry (:name |replays-concrete-operation-history)
             :code $ quote $ let
                 reel $ ReelState :base schema/database :db schema/database :records ([]) :merged? false
