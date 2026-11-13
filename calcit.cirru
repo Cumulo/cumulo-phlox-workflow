@@ -741,8 +741,9 @@
                 hint-fn $ Fn String $ -> (Result Op String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Tag Dynamic
+          :schema $ quote $ Fn Tag Input
             -> $ Result Op String
+            :generics Input
         'decode-client-store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-client-store (value)
             try
@@ -763,8 +764,9 @@
                 hint-fn $ Fn String $ -> (Result ClientStore String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result ClientStore String
+            :generics Input
         'decode-database $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn decode-database (value)
             try
@@ -795,8 +797,9 @@
                 hint-fn $ Fn String $ -> (Result Db String)
                 Result :err detail
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Result Db String
+            :generics Input
           :tests $ []
             %{} 'TestEntry (:name |legacy-users-sessions-points-roundtrip)
               :code $ quote $ match
@@ -1033,8 +1036,9 @@
                       , nested
                     , nested
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'session $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def session
             Session :user-id None :id None :nickname None :router router :messages $ {}
@@ -1061,8 +1065,9 @@
                       MapEntryDecision String $ Map Tag Dynamic
                     MapEntryDecision :keep key $ struct-input value
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
         'struct-input $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn struct-input (value)
             decode-map-as
@@ -1084,8 +1089,9 @@
                 .assoc source :nickname $ optional-input $ get source :nickname
                 , :avatar $ optional-input $ get source :avatar
           :examples $ []
-          :schema $ quote $ Fn Dynamic
+          :schema $ quote $ Fn Input
             -> $ Map Tag Dynamic
+            :generics Input
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.schema
           :require
