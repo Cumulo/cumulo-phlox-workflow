@@ -712,22 +712,12 @@
                 :effect/persist $ do (decode-map-as data 'Nil) (Op :effect/persist)
                 :reel/reset $ do (decode-map-as data 'Nil) (Op :reel/reset)
                 :reel/merge $ do (decode-map-as data 'Nil) (Op :reel/merge)
-                :user/log-in $ let
-                    credentials $ decode-map-as data $ List String
-                  if
-                    = 2 $ .len credentials
-                    Op :user/log-in
-                      .unwrap $ nth credentials 0
-                      .unwrap $ nth credentials 1
-                    raise "|Expected two credential strings"
-                :user/sign-up $ let
-                    credentials $ decode-map-as data $ List String
-                  if
-                    = 2 $ .len credentials
-                    Op :user/sign-up
-                      .unwrap $ nth credentials 0
-                      .unwrap $ nth credentials 1
-                    raise "|Expected two credential strings"
+                :user/log-in $ let[] (username password)
+                  decode-map-as data $ Tuple String String
+                  Op :user/log-in username password
+                :user/sign-up $ let[] (username password)
+                  decode-map-as data $ Tuple String String
+                  Op :user/sign-up username password
                 :session/remove-message $ Op :session/remove-message $ decode-map-as
                   if (string? data) data $ .unwrap $ get (struct-input data) :id
                   , 'String
