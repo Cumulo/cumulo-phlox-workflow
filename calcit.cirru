@@ -150,7 +150,7 @@
           :code $ quote $ defn send-op! (op)
             ws-send! $ schema/op-wire op
           :examples $ []
-          :schema $ quote $ Fn schema/Op (-> Unit)
+          :schema $ quote $ Fn schema/Op (-> Unit) (:features :state)
         'simulate-login! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn simulate-login! ()
             match
@@ -163,7 +163,7 @@
                   (:err detail) (println "|Rejected stored credentials:" detail)
             , &unit
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :io)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.client
           :require
@@ -234,7 +234,7 @@
                     , content
                   [] content
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (Option schema/ClientStore) (-> phlox.schema/PhloxElement) (:features :io)
+          :schema $ quote $ Fn (Map Tag Dynamic) (Option schema/ClientStore) (-> phlox.schema/PhloxElement) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require (respo-ui.core :as ui)
@@ -274,7 +274,7 @@
                   browser/storage-remove! $ :storage-key config/site
                   , &unit
           :examples $ []
-          :schema $ quote $ Fn schema/ClientUser (-> phlox.schema/PhloxElement)
+          :schema $ quote $ Fn schema/ClientUser (-> phlox.schema/PhloxElement) (:features :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.profile
           :require
@@ -455,7 +455,7 @@
                     browser/storage-set! (:storage-key config/site) (format-cirru-edn pass)
                     , &unit
           :examples $ []
-          :schema $ quote $ Fn (Map schema/UiCoordKey Dynamic) (-> phlox.schema/PhloxElement) (:features :js-ffi)
+          :schema $ quote $ Fn (Map schema/UiCoordKey Dynamic) (-> phlox.schema/PhloxElement) (:features :js-ffi :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.signin
           :require
@@ -517,7 +517,7 @@
           :schema $ quote $ Fn (Map schema/UiCoordKey Dynamic)
             Map String $ List Number
             -> phlox.schema/PhloxElement
-            :features :js-ffi
+            :features :js-ffi :state
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.workspace
           :require
