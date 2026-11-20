@@ -4,9 +4,9 @@
     |Cumulo/cumulo-util.calcit |0.0.45
     |Phlox-GL/phlox |0.9.7
     |Respo/respo-ui.calcit |0.15.6
-    |calcit-lang/bisection-key |0.0.48
+    |calcit-lang/bisection-key |0.0.49
     |calcit-lang/calcit-wss |0.2.45
-    |calcit-lang/calcit.std |0.2.56
+    |calcit-lang/calcit.std |0.2.58
     |calcit-lang/js-ffi |0.2.18
     |calcit-lang/recollect |0.3.9
     |mvc-works/ws-edn.calcit |0.2.5
