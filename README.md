@@ -6,7 +6,7 @@
 
 请一起更新前端与后端。原生后端继续运行 `calcit --entry server`，部署目录仍为
 `/servers/cumulo-phlox-workflow/`。部署前请在服务器安装配套 Calcit 0.44.0、正式模块
-和 native dylib。现有 rsync 只复制源码与清单，安装依赖和重启仍是独立步骤。
+和 native dylib；标准库 0.2.58、WSS 0.2.46 与 Bisection Key 0.0.49 配对该工具链。现有 rsync 只复制源码与清单，安装依赖和重启仍是独立步骤。
 
 旧 Map 存档、WebSocket 消息格式和登录存储键沿用原格式。界面状态路径使用
 `Tag | String | Number`，拖动消息在入口校验为点 ID 加两个数值坐标。损坏存档仍会
@@ -39,6 +39,9 @@ port=19250 yarn watch-server
 页面查询参数 `?host=127.0.0.1&port=19250` 可指定后端。原生服务默认监听所有接口；
 隔离验收副本使用 WSS 官方显式回环绑定参数。服务端从源码所在目录读取
 `storage.cirru`，在原位置写入存档与 backups；升级前备份并用副本验证恢复。
+
+共享依赖使用 Phlox 0.9.8、Cumulo Reel 0.3.8 和 WS-EDN 0.2.6 的正式版本，
+前后端应一起更新。
 
 ## CI 与部署
 
