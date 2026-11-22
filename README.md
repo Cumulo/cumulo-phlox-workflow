@@ -40,7 +40,7 @@ port=19250 yarn watch-server
 隔离验收副本使用 WSS 官方显式回环绑定参数。服务端从源码所在目录读取
 `storage.cirru`，在原位置写入存档与 backups；升级前备份并用副本验证恢复。
 
-共享依赖使用 Phlox 0.9.8、Cumulo Reel 0.3.8 和 WS-EDN 0.2.6 的正式版本，
+共享依赖使用 Phlox 0.9.8、Cumulo Reel 0.3.9 和 WS-EDN 0.2.7 的正式版本，
 前后端应一起更新。
 
 ## CI 与部署
