@@ -39,19 +39,11 @@
                 host $ .unwrap-or (shared/search-params-get params |host) (:hostname location)
                 port $ .unwrap-or (shared/search-params-get params |port)
                   str $ :port config/site
-              ws-connect! (str |ws:// host |: port)
-                {}
-                  :on-open $ fn (event)
-                    hint-fn $ Fn JsObject $ -> Unit
-                    simulate-login!
-                    , &unit
-                  :on-close $ fn (event)
-                    hint-fn $ Fn JsObject $ -> Unit
-                    reset! *store None
-                    shared/console-error! "|Lost connection!"
-                    , &unit
-                  :on-data on-server-data
-                  :class-mapper schema/client-wire-classes
+                opened $ fn (event) (simulate-login!) &unit
+                closed $ fn (event) (reset! *store None) (shared/console-error! "|Lost connection!") &unit
+              ws-edn.client/ws-connect-typed! (str |ws:// host |: port)
+                ws-edn.client/ClientConfig :retry-base-ms None :retry-max-ms None :retry-jitter None :heartbeat-timeout-ms None :class-mapper schema/client-wire-classes
+                ws-edn.client/ClientCallbacks :on-open (Some opened) :on-close (Some closed) :on-error None :on-data $ Some on-server-data
             , &unit
           :examples $ []
           :schema $ quote $ Fn (-> Unit) (:features :io :state)
