@@ -3,7 +3,7 @@
   :version |0.1.0
   :dependencies $ {} (|Cumulo/cumulo-reel.calcit |0.3.9)
     |Cumulo/cumulo-util.calcit |0.0.46
-    |Phlox-GL/phlox |0.9.8
+    |Phlox-GL/phlox |0.10.0
     |Respo/respo-ui.calcit |0.15.7
     |calcit-lang/bisection-key |0.0.49
     |calcit-lang/calcit-wss |0.2.46
