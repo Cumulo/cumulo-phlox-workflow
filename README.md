@@ -10,7 +10,7 @@
 
 旧 Map 存档、WebSocket 消息格式和登录存储键沿用原格式。界面状态路径使用
 `Tag | String | Number`，拖动消息在入口校验为点 ID 加两个数值坐标。损坏存档仍会
-阻止启动。前端使用 Phlox 0.9.7 和原 Pixi 7.4.0，COS 上传沿用 action 内置校验。
+阻止启动。前端使用 Phlox 0.10.0 和原 Pixi 7.4.0，COS 上传沿用 action 内置校验。
 
 ## 开发与检查
 
@@ -40,7 +40,7 @@ port=19250 yarn watch-server
 隔离验收副本使用 WSS 官方显式回环绑定参数。服务端从源码所在目录读取
 `storage.cirru`，在原位置写入存档与 backups；升级前备份并用副本验证恢复。
 
-共享依赖使用 Phlox 0.9.8、Cumulo Reel 0.3.9 和 WS-EDN 0.2.7 的正式版本，
+共享依赖使用 Phlox 0.10.0、Cumulo Reel 0.3.9 和 WS-EDN 0.2.7 的正式版本，
 前后端应一起更新。
 
 ## CI 与部署
