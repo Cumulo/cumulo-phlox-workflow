@@ -2,20 +2,20 @@
 
 使用 Phlox/Pixi 绘制前端、原生 Calcit WebSocket 服务端的实时应用模板。
 
-## 0.44.0 升级对使用者的影响
+## 0.45.1 升级对使用者的影响
 
 请一起更新前端与后端。原生后端继续运行 `calcit --entry server`，部署目录仍为
-`/servers/cumulo-phlox-workflow/`。部署前请在服务器安装配套 Calcit 0.44.0、正式模块
-和 native dylib；标准库 0.2.58、WSS 0.2.46 与 Bisection Key 0.0.49 配对该工具链。现有 rsync 只复制源码与清单，安装依赖和重启仍是独立步骤。
+`/servers/cumulo-phlox-workflow/`。部署前请在服务器安装配套 Calcit 0.45.1、正式模块
+和 native dylib；标准库 0.2.59、WSS 0.2.47 与 Bisection Key 0.0.52 配对该工具链。现有 rsync 只复制源码与清单，安装依赖和重启仍是独立步骤。
 
 旧 Map 存档、WebSocket 消息格式和登录存储键沿用原格式。界面状态路径使用
 `Tag | String | Number`，拖动消息在入口校验为点 ID 加两个数值坐标。损坏存档仍会
-阻止启动。前端使用 Phlox 0.10.0 和原 Pixi 7.4.0，COS 上传沿用 action 内置校验。
+阻止启动。前端使用 Phlox 0.12.2 和原 Pixi 7.4.0，COS 上传沿用 action 内置校验。
 
 ## 开发与检查
 
 源码以 `calcit.cirru` 为准，模块声明放在 `deps.cirru`；使用官方结构化 CLI 编辑源码。
-Node 24、Yarn 4.18.0 用于前端构建，Caps 0.1.1 安装并构建 native 依赖。
+Node 24、Yarn 4.18.0 用于前端构建，Caps 0.1.2 安装并构建 native 依赖。
 
 ```bash
 corepack enable
@@ -40,12 +40,12 @@ port=19250 yarn watch-server
 隔离验收副本使用 WSS 官方显式回环绑定参数。服务端从源码所在目录读取
 `storage.cirru`，在原位置写入存档与 backups；升级前备份并用副本验证恢复。
 
-共享依赖使用 Phlox 0.10.0、Cumulo Reel 0.3.9 和 WS-EDN 0.2.7 的正式版本，
+共享依赖使用 Phlox 0.12.2、Cumulo Reel 0.3.13 和 WS-EDN 0.3.2 的正式版本，
 前后端应一起更新。
 
 ## CI 与部署
 
-CI 使用正式工具链、不可变 npm 安装、双入口完整 strict、全部项目定义、附带原生测试和弃用调用检查。
+CI 使用正式工具链、不可变 npm 安装、双入口完整 strict、指定项目命名空间检查、附带原生测试和弃用调用检查。
 前端 `VITE_BASE_URL` 默认 `./`，CI 生产前缀为
 `https://cos-sh.tiye.me/Cumulo/cumulo-phlox-workflow/`；PR 使用独立的
 `pr/<number>/<run-id>/<attempt>/` 前缀。COS 只上传 `dist/`，由上传 action 自身逐文件校验。
